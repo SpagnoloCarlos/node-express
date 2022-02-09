@@ -1,4 +1,4 @@
-const express = require('express'); 
+const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const jwt = require('express-jwt');
@@ -13,14 +13,14 @@ const userRouter = require('./routes/userRouter')(User);
 
 const app = express();
 
-app.use(bodyParser.urlencoded({ extended: true}));
+app.use(bodyParser.urlencoded({extended: true}));
 app.use(bodyParser.json());
 
 app.all('/api/*', jwt({
-    secret: 'secret',
-    algorithms: ['HS256']
+  secret: 'secret',
+  algorithms: ['HS256'],
 }).unless({
-    path: ['/api/users/login']
+  path: ['/api/users/login'],
 }));
 
 app.use('/api', bookRouter, userRouter);

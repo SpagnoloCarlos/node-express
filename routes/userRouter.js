@@ -7,22 +7,22 @@ const validator = require('express-joi-validation').createValidator();
 const routes = (User) => {
   const userRouter = express.Router();
 
-  const { getUsers, postUsers, getUserById, putUsers, deleteUserById, postLogin, validateToken } = userController(User);
+  const {getUsers, postUsers, getUserById, putUsers, deleteUserById, postLogin, validateToken} = userController(User);
 
   userRouter.route('/users')
-    .get(getUsers)
-    .post(validator.body(userValidationSchema), postUsers);
+      .get(getUsers)
+      .post(validator.body(userValidationSchema), postUsers);
 
   userRouter.route('/users/:userId')
-    .get(getUserById)
-    .put(putUsers)
-    .delete(deleteUserById);
+      .get(getUserById)
+      .put(putUsers)
+      .delete(deleteUserById);
 
   userRouter.route('/users/login')
-    .post(postLogin)
+      .post(postLogin);
 
   userRouter.route('/users/login/validate')
-    .get(validateToken)
+      .get(validateToken);
 
   return userRouter;
 };
