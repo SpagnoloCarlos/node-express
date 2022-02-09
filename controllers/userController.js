@@ -3,7 +3,7 @@ const bcrypt = require('bcrypt');
 
 const usersController = (User) => {
   const getUsers = async (req, res) => {
-    const {query} = req;
+    const { query } = req;
     const response = await User.find(query);
 
     res.json(response);
@@ -12,21 +12,21 @@ const usersController = (User) => {
   const postUsers = async (req, res) => {
     const user = new User(req.body);
 
-    user.password = await bcrypt.hash(user.password, 10); //no usar callback, porque usamos await
+    user.password = await bcrypt.hash(user.password, 10);
 
     await user.save();
     res.json(user);
   }
 
   const getUserById = async (req, res) => {
-    const {params} = req;
+    const { params } = req;
     const response = await User.findById(params.userId);
 
     res.json(response);
   }
 
   const putUsers = async (req, res) => {
-    const {body} = req;
+    const { body } = req;
 
     const response = await User.updateOne({
       _id: req.params.userId,
@@ -87,6 +87,7 @@ const usersController = (User) => {
     try{
       const decoded = await jwt.verify(token, 'secret');
       res.json(decoded);
+      
     }catch (err){
       res.status(403).json({ message: "Invalid Token"});
     } 
