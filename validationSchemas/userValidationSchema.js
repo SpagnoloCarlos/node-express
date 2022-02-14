@@ -1,32 +1,52 @@
 const Joi = require('joi');
 
-const regExpName = new RegExp(/^[a-zA-Z]+\s{0,1}[a-zA-Z]*$/);
-const regExpPassword = new RegExp(/^(?=\w*\d)(?=\w*[A-Z])(?=\w*[a-z])\S{8,16}$/);
-const regExpAddress = new RegExp(/^[a-zA-Z]{2,20}(\s[a-zA-Z]*\S){0,3}\d+$/);
-const regExpPhone = new RegExp(/^\d+$/);
+const regExpName = new RegExp(/^[a-zA-Z]{2,}(\s[a-zA-Z]{2,})*$/);
+const regExpPassword = new RegExp(/^(?=\w*\d)(?=\w*[A-Z])(?=\w*[a-z])[a-zA-Z\d]{8,16}$/);
+const regExpAddress = new RegExp(/^([a-zA-Z]{2,15})(\s[a-zA-Z]{1,15})*\s(\d{1,4})$/);
 
 const userSchema = Joi.object({
-  firstName: Joi.string().pattern(regExpName, ' ').min(3).max(15).required().messages({
+  firstName: Joi.string().pattern(regExpName, ' ').min(2).max(20).required().messages({
     'string.pattern.name': '"firstname" must only contain letters and up to two names',
   }),
-  lastName: Joi.string().pattern(regExpName, ' ').max(15).required().messages({
+  lastName: Joi.string().pattern(regExpName, ' ').min(2).max(20).required().messages({
     'string.pattern.name': '"lastname" must only contain letters and up to two last names',
   }),
-  userName: Joi.string().alphanum().min(3).max(10).required().required(),
+  userName: Joi.string().alphanum().min(3).max(15).required(),
   password: Joi.string().pattern(regExpPassword, ' ').required().messages({
     'string.pattern.name': '"password" must contain: \n'+
     '- At least one lowercase letter\n'+
     '- At least one capital letter\n'+
     '- At least one number\n'+
-    '- A length of 8 to 16 characters',
+    '- A length of 8 to 16 characters\n'+
+    '- No special characters or whitespace',
   }),
   email: Joi.string().email().required(),
-  address: Joi.string().pattern(regExpAddress, ' ').max(40).required().messages({
+  address: Joi.string().pattern(regExpAddress, ' ').max(50).required().messages({
     'string.pattern.name': '"address" must contain the names and street number',
   }),
-  phone: Joi.string().pattern(regExpPhone, ' ').min(9).max(12).required().messages({
-    'string.pattern.name': '"phone" must only contain numbers',
+  phone: Joi.number().min(1000000000).max(999999999999).required().messages({
+    'number.name': '"phone" must only contain numbers',
+    'number.min': '"phone" must contain between 10 and 12 characters',
+    'number.max': '"phone" must contain between 10 and 12 characters',
   }),
 });
 
-module.exports = userSchema;
+const userLoginSchema = Joi.object({
+  userName: Joi.string().alphanum().min(3).max(15).required(),
+  password: Joi.string().pattern(regExpPassword, ' ').required().messages({
+    'string.pattern.name': '"password" must contain: \n'+
+    '- At least one lowercase letter\n'+
+    '- At least one capital letter\n'+
+    '- At least one number\n'+
+    '- A length of 8 to 16 characters\n'+
+    '- No special characters or whitespace',
+  }),
+});
+
+const queryUserSchema = Joi.object({
+  userName: Joi.string().alphanum().min(3).max(15).required(),
+});
+
+module.exports.userSchema = userSchema;
+module.exports.userLoginSchema = userLoginSchema;
+module.exports.queryUserSchema = queryUserSchema;

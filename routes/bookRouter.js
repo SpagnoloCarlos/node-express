@@ -7,16 +7,19 @@ const validator = require('express-joi-validation').createValidator();
 const routes = (Book) => {
   const bookRouter = express.Router();
 
-  const {getBooks, postBooks, getBookById, putBooks, deleteBookById} = booksController(Book);
+  const {getAllBooks, postBooks, getBooksById, putBooks, deleteBooksById, getSearchBooks} = booksController(Book);
 
   bookRouter.route('/books')
-      .get(getBooks)
-      .post(validator.body(bookValidationSchema), postBooks);
+      .get(getAllBooks)
+      .post(validator.body(bookValidationSchema.bookSchema), postBooks);
 
   bookRouter.route('/books/:bookId')
-      .get(getBookById)
-      .put(putBooks)
-      .delete(deleteBookById);
+      .get(getBooksById)
+      .put(validator.body(bookValidationSchema.bookSchema), putBooks)
+      .delete(deleteBooksById);
+
+  bookRouter.route('/searchBooks')
+      .get(validator.query(bookValidationSchema.queryBookSchema), getSearchBooks);
 
   return bookRouter;
 };

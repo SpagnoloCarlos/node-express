@@ -2,69 +2,100 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 
 const usersController = (User) => {
-  const getUsers = async (req, res) => {
+  const getAllUsers = async (req, res) => {
     const {query} = req;
-    const response = await User.find(query);
+    const allUsers = await User.find(query);
 
-    res.json(response);
+    res.json(allUsers);
   };
 
   const postUsers = async (req, res) => {
     const user = new User(req.body);
-
     user.password = await bcrypt.hash(user.password, 10);
-
     await user.save();
+
     res.json(user);
   };
 
-  const getUserById = async (req, res) => {
-    const {params} = req;
-    const response = await User.findById(params.userId);
+  const getUsersById = async (req, res) => {
+    try {
+      const {params} = req;
+      const userDb = await User.findById(params.userId);
 
-    res.json(response);
+      res.json(userDb);
+    } catch {
+      res.json({
+        'error': 'Invalid _id',
+        'message': 'User not found',
+      });
+    }
   };
 
   const putUsers = async (req, res) => {
-    const {body} = req;
+    try {
+      const {body} = req;
 
-    const response = await User.updateOne({
-      _id: req.params.userId,
-    }, {
-      $set: {
-        firstName: body.firstName,
-        lastName: body.lastName,
-        userName: body.userName,
-        password: await bcrypt.hash(body.password, 10),
-        email: body.email,
-        address: body.address,
-        phone: body.phone,
-      },
-    });
+      const userUpdate = await User.updateOne({
+        _id: req.params.userId,
+      }, {
+        $set: {
+          firstName: body.firstName,
+          lastName: body.lastName,
+          userName: body.userName,
+          password: await bcrypt.hash(body.password, 10),
+          email: body.email,
+          address: body.address,
+          phone: body.phone,
+        },
+      });
 
-    res.json(response);
+      res.json(userUpdate);
+    } catch {
+      res.json({
+        'error': 'Invalid _id',
+        'message': 'User not found',
+      });
+    }
   };
 
-  const deleteUserById = async (req, res) => {
-    const id = req.params.userId;
+  const deleteUsersById = async (req, res) => {
+    try {
+      const userId = req.params.userId;
+      await User.findByIdAndDelete(userId);
 
-    await User.findByIdAndDelete(id);
-    res.status(202).json('The user has been successfully deleted');
+      res.json('The user has been successfully deleted');
+    } catch {
+      res.json({
+        'error': 'Invalid _id',
+        'message': 'User not found',
+      });
+    }
   };
 
-  const postLogin = async (req, res) => {
+  const getUsersByUserName = async (req, res) => {
+    const {query} = req;
+    const userDb = await User.findOne({'userName': query.userName});
+
+    if (userDb) {
+      res.json(userDb);
+    } else {
+      res.json({'message': 'User not found'});
+    }
+  };
+
+  const postLoginUsers = async (req, res) => {
     const {body} = req;
     const userDb = await User.findOne({'userName': body.userName});
 
     if (userDb && await bcrypt.compare(body.password, userDb.password)) {
       const token = createToken(userDb);
 
-      res.status(200).json({
+      res.json({
         message: 'Valid credentials',
         token,
       });
     } else {
-      res.status(401).json({message: 'Invalid credentials'});
+      res.json({message: 'Invalid credentials'});
     }
   };
 
@@ -75,22 +106,10 @@ const usersController = (User) => {
       userName: userDb.userName,
     };
 
-    return jwt.sign(payload, 'secret', {expiresIn: '1m'});
+    return jwt.sign(payload, 'secret', {expiresIn: '1h'});
   };
 
-  const validateToken = async (req, res) => {
-    const {body} = req;
-    const token = body.token;
-
-    try {
-      const decoded = await jwt.verify(token, 'secret');
-      res.json(decoded);
-    } catch (err) {
-      res.status(403).json({message: 'Invalid Token'});
-    }
-  };
-
-  return {getUsers, postUsers, getUserById, putUsers, deleteUserById, postLogin, validateToken};
+  return {getAllUsers, postUsers, getUsersById, putUsers, deleteUsersById, getUsersByUserName, postLoginUsers};
 };
 
 module.exports = usersController;
